@@ -20,8 +20,8 @@ public class DBConnection {
 			//		.getConnection("jdbc:mysql://127.8.100.2:3306/se2firstapp?"
 			//				+ "user=adminYKFs38v&password=QG9RmdNVFgmc&characterEncoding=utf8");
 			connection = DriverManager
-					.getConnection("jdbc:mysql://localhost:3306/jumber?"
-							+ "user=root&password=1234*&characterEncoding=utf8");
+					.getConnection("jdbc:mysql://127.2.13.2:3306/jumper?"
+							+ "user=admin4BkrBVg&password=pnQtRCR_uzC2&characterEncoding=utf8");
 //			connection = DriverManager
 //				.getConnection("jdbc:mysql://127.7.144.2:3306/backend?"
 //							+ "user=admin2Wuf4Wp&password=t8TfgF2tJa9e&characterEncoding=utf8");

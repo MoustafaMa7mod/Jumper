@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import com.mysql.jdbc.Statement;
 
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +18,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.models.User;
-
 import com.models.DBConnection;
 import com.models.User;
 import com.mysql.jdbc.Statement;
@@ -31,7 +31,21 @@ public class Company {
 	private Double rate ;
 	private String phoneNumber ; 
 	private String location ; 
+	private String password ;
+	private String email;
 	
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
@@ -129,6 +143,27 @@ public class Company {
 		return arr ;
 	}
 	
+	public static ArrayList <String> getCompanyEmail (int companyID) throws SQLException
+	{
+		ArrayList <String> arr = new ArrayList<>() ; 
+		Connection con = DBConnection.getActiveConnection();
+		String sql ="select email from company_email where companyID = " + companyID + " ; " ;
+		PreparedStatement stmt = con.prepareStatement(sql);
+		ResultSet rs = stmt.executeQuery();
+		
+		while (rs.next())
+		{
+			arr.add(rs.getString("email")) ; 
+			
+		}
+		
+		return arr ;
+	}
+	
+	
+	
+	
+	
 	public static ArrayList <String> getCompanyLocation (int companyID) throws SQLException
 	{
 		ArrayList <String> arr = new ArrayList<>() ; 
@@ -147,26 +182,19 @@ public class Company {
 		
 	}
 	
-	public static Company AddCompany(String companyName , String description , String website , String latitude , String longtude ) throws SQLException
+	public static Company AddCompany(String companyName ,String password , String email , String description , String website , String latitude , String longtude ) throws SQLException
 	{
 		Connection con = DBConnection.getActiveConnection();
 		String sql ="select longtude ,latitude from company where longtude="+longtude+" and  latitude="+latitude+";";
-		PreparedStatement stmt = null;
-		try {
-			stmt = con.prepareStatement(sql);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		PreparedStatement stmt = con.prepareStatement(sql);
 		ResultSet rs = stmt.executeQuery();
-		
 		if (rs.next()) {
 			Company company = new Company();
 			company.companyName="" ;
 			return company;
 		}
-		
-		 sql =" Insert into company (companyName , description , website , longtude , latitude  ) values ('"+companyName+"','"+description+"','"+website+"',"+longtude+","+latitude+");"; 
+
+		 sql =" Insert into company (companyName , password , description , website , longtude , latitude  ) values ('"+companyName+"','"+password+"','"+description+"','"+website+"',"+longtude+","+latitude+");"; 
 			stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			stmt.executeUpdate();
 			rs = stmt.getGeneratedKeys();
@@ -178,6 +206,11 @@ public class Company {
 				company.website=website;
 				company.latitude = Double.parseDouble(latitude);
 				company.longtude = Double.parseDouble(longtude);
+				company.password=password;
+				sql =" Insert into company_email values ( "+company.ID +" , '"+email+"' );"; 
+				stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+				stmt.executeUpdate();
+				company.email=email;
 				return company;
 			}
 			Company company = new Company();
@@ -400,4 +433,46 @@ public class Company {
 			return "Email not found";
 		
 	}
+	
+	public static String setCompanyRate(int userID,int companyID,int rate) throws SQLException
+	{
+		Connection con = DBConnection.getActiveConnection();
+		String sql = "select * from company_rate where userID = " + userID + "  and companyID = "+companyID+" ;";
+		PreparedStatement stmt = con.prepareStatement(sql);
+		ResultSet rs = stmt.executeQuery();
+		if(rs.next())
+		{
+			sql = "update company_rate set rate = "+rate+" where userID = " + userID + "  and companyID = "+companyID+" ;";
+			stmt = con.prepareStatement(sql);
+			stmt.executeUpdate();
+		}
+		else
+		{
+			sql = "insert into company_rate values ( "+userID+" , "+companyID+" , "+rate+" );";
+			stmt = con.prepareStatement(sql);
+			stmt.executeUpdate();
+		}
+		
+		sql = "select count(*) ,sum(rate) from company_rate where  companyID = "+companyID+" ;";
+		stmt = con.prepareStatement(sql);
+		rs = stmt.executeQuery();
+	if(rs.next())
+	{
+		int noOfUsers=rs.getInt("count(*)");
+		int summationOfRate=rs.getInt("sum(rate)");
+		double finalRate=((double)summationOfRate/noOfUsers);
+		sql = "update company set rate = "+finalRate+" where ID = "+companyID+" ;";
+		stmt = con.prepareStatement(sql);
+		stmt.executeUpdate();
+
+	}
+	return "Done";	
+		
+	}
+	
+	
+	
+	
+	
+	
 }

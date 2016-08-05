@@ -25,11 +25,11 @@ import org.json.simple.JSONArray;
 //import org.glassfish.jersey.server.mvc.Viewable;
 import org.json.simple.JSONObject;
 
+import com.models.Company;
 import com.models.DBConnection;
 import com.models.User;
 
 import Search.*;
-import Sort.SortStrategy;
 import Sort.*;
 @Path("/")
 public class Services {
@@ -101,16 +101,17 @@ public class Services {
 	@POST
 	@Path("/AddCompany")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String Addcompany(@FormParam("name") String name,
+	public String Addcompany(@FormParam("name") String name,@FormParam("password") String password,@FormParam("email") String email,
 			@FormParam("des") String des, @FormParam("website") String website ,@FormParam("lat") String lat ,@FormParam("lng") String lng) throws SQLException {
 		
 		
-		Company company = Company.AddCompany(name, des, website, lat, lng )  ; 
+		Company company = Company.AddCompany(name, password,email,des, website, lat, lng )  ; 
 		
 		JSONObject json = new JSONObject();
 		json.put("ID", company.getID());
 		json.put("name", company.getCompanyName());
 		json.put("des", company.getDescription());
+		json.put("email", company.getEmail());
 		json.put("website", company.getWebsite());
 		json.put("lat", company.getLatitude());
 		json.put("lng", company.getLongtude());
@@ -303,7 +304,7 @@ public class Services {
 	@POST
 	@Path("/SearchBudget")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String SearchBudget(@FormParam("Budget")  double budget ) throws SQLException {
+	public String SearchBudget(@FormParam("budget")  double budget ) throws SQLException {
 		
 	    ArrayList<Trip>t = SearchStrategy.searchBudget(budget);
 	    JSONArray jsonArray =new JSONArray();
@@ -367,9 +368,9 @@ public class Services {
 	
 	
 	@POST
-	@Path("/SearchTripName")
+	@Path("/Searchplace")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String SearchTripName(@FormParam("tripName")  String tripName ) throws SQLException {
+	public String Searchplace(@FormParam("tripName")  String tripName ) throws SQLException {
 		
 	    ArrayList<Trip>t = SearchStrategy.searchTrip(tripName);
 	    JSONArray jsonArray =new JSONArray();
@@ -419,6 +420,7 @@ public class Services {
 		Company c = Company.getCompany(companyID) ; 
 	    ArrayList <String> arr = Company.getCompanyNumber(companyID) ;
 	    ArrayList <String> arr1 = Company.getCompanyLocation(companyID) ;
+	    ArrayList <String> arr2 = Company.getCompanyEmail(companyID) ;
 	    JSONArray jsonArray=new JSONArray();
 	    JSONObject json=new JSONObject();
 	    json.put("ID",c.getID() );
@@ -446,7 +448,15 @@ public class Services {
 	    	j1.add(json);
 	    	
 	    }
-	    jsonArray.add(j1);
+	    JSONArray j2=new JSONArray();
+	    for(int i=0;i<arr2.size();i++)
+	    {
+	    	json=new JSONObject();
+	    	json.put("email", arr2.get(i));
+	    	j2.add(json);
+	    	
+	    }
+	    jsonArray.add(j2);
 	    
 	    
 	    
@@ -819,11 +829,11 @@ public class Services {
 
 	
 	@POST
-	@Path("/relatedTrips")
+	@Path("/relatedCategoryTrips")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String relatedTrips(@FormParam("userID") int  userID,@FormParam("tripID") int tripID) throws SQLException {
+	public String relatedCategoryTrips(@FormParam("userID") int  userID,@FormParam("tripID") int tripID) throws SQLException {
 		 
-		ArrayList<Trip>t=Trip.relatedTrips(userID, tripID);
+		ArrayList<Trip>t=Trip.relatedCategoryTrips(userID, tripID);
 		JSONArray jsonArray=new JSONArray();
 		for(int i=0;i<t.size();i++)
 		{
@@ -850,6 +860,87 @@ public class Services {
 	   
 		
 	}
+	
+	
+	@POST
+	@Path("/relatedCompanyTrips")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String relatedCompanyTrips(@FormParam("userID") int  userID,@FormParam("tripID") int tripID) throws SQLException {
+		 
+		ArrayList<Trip>t=Trip.relatedcompanyTrips(userID, tripID);
+		JSONArray jsonArray=new JSONArray();
+		for(int i=0;i<t.size();i++)
+		{
+			  JSONObject j=new JSONObject();
+			  j.put("ID",t.get(i).ID );
+		   	   j.put("companyID",t.get(i).companyID );
+		   	   j.put("name",t.get(i).tripName);
+		   	   j.put("companyName",t.get(i).companyName);
+		   	   j.put("location",t.get(i).locationCompany );
+		   	   j.put("budget",t.get(i).budget);
+		   	   j.put("programme",t.get(i).programme );
+		   	   j.put("duration",t.get(i).duration );
+		   	   j.put("startDate",t.get(i).startDate );
+		   	   j.put("endDate",t.get(i).endDate );
+		   	   j.put("fav", t.get(i).fav);
+		   	   j.put("rate",t.get(i).rate );
+			   j.put("transportation",t.get(i).transportation);
+			   j.put("category",t.get(i).category );
+	   jsonArray.add(j);
+	   
+		}
+	   
+		return jsonArray.toJSONString();
+	   
+		
+	}
+	
+	
+	
+	@POST
+	@Path("/relatedPlaceTrips")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String relatedPlaceTrips(@FormParam("userID") int  userID,@FormParam("tripID") int tripID) throws SQLException {
+		 
+		ArrayList<Trip>t=Trip.relatedPlaceTrips(userID, tripID);
+		JSONArray jsonArray=new JSONArray();
+		for(int i=0;i<t.size();i++)
+		{
+			  JSONObject j=new JSONObject();
+			  j.put("ID",t.get(i).ID );
+		   	   j.put("companyID",t.get(i).companyID );
+		   	   j.put("name",t.get(i).tripName);
+		   	   j.put("companyName",t.get(i).companyName);
+		   	   j.put("location",t.get(i).locationCompany );
+		   	   j.put("budget",t.get(i).budget);
+		   	   j.put("programme",t.get(i).programme );
+		   	   j.put("duration",t.get(i).duration );
+		   	   j.put("startDate",t.get(i).startDate );
+		   	   j.put("endDate",t.get(i).endDate );
+		   	   j.put("fav", t.get(i).fav);
+		   	   j.put("rate",t.get(i).rate );
+			   j.put("transportation",t.get(i).transportation);
+			   j.put("category",t.get(i).category );
+	   jsonArray.add(j);
+	   
+		}
+	   
+		return jsonArray.toJSONString();
+	   
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	@POST
 	@Path("/searchTransportation")
@@ -883,4 +974,33 @@ public class Services {
 	   
 		
 	}	
+	
+	
+	
+	@POST
+	@Path("/setTripRate")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String setTripRate(@FormParam("userID") int userID,@FormParam("tripID") int tripID,@FormParam("rate") int rate) throws SQLException {
+		 
+		String s=Trip.setTripRate(userID, tripID, rate);
+		
+			  JSONObject j=new JSONObject();
+			  j.put("status", s);
+			  return j.toJSONString();
+
+	}
+	
+	
+	@POST
+	@Path("/setCompanyRate")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String setCompanyRate(@FormParam("userID") int userID,@FormParam("companyID") int companyID,@FormParam("rate") int rate) throws SQLException {
+		 
+		String s=Company.setCompanyRate(userID, companyID, rate);
+		
+			  JSONObject j=new JSONObject();
+			  j.put("status", s);
+			  return j.toJSONString();
+
+	}
 }

@@ -111,12 +111,13 @@ public class SearchStrategy  {
 	}
 
 	
-	public static ArrayList<Trip> searchBudget(double budget) {
+	public static ArrayList<Trip> searchBudget(double budget) throws SQLException {
 		ArrayList<Trip>trip=new ArrayList<>();
+		double low=(budget-(budget/2));
+		double high=(budget+(budget/2));
 		 
-		try {
 			Connection con = DBConnection.getActiveConnection();
-	        String sql = "select * from trips where budget <= " + budget + ";" ; 
+	        String sql = "select * from trips where budget = " + budget + ";" ; 
 			PreparedStatement stmt = con.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 		while(rs.next())
@@ -138,10 +139,29 @@ public class SearchStrategy  {
 			trip.add(t);
 		}
 		
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		sql = "select * from trips where budget  >= "+low+"  and budget <= "+high+" and budget <>  "+budget +" ;" ; 
+		stmt = con.prepareStatement(sql);
+		rs = stmt.executeQuery();
+	while(rs.next())
+	{
+		Trip t=new Trip();
+		t.ID=rs.getInt("ID");
+		t.companyID=rs.getInt("companyID");
+		t.tripName=rs.getString("name");
+		t.companyName=rs.getString("companyName");
+		t.locationCompany=rs.getString("companyLocation");
+		t.budget=rs.getDouble("budget");
+		t.programme=rs.getString("programme");
+		t.duration=rs.getInt("duration");
+		t.startDate=rs.getDate("startDate");
+		t.endDate=rs.getDate("endDate");
+		t.rate=rs.getDouble("rate");
+		t.category=rs.getString("category");
+		t.transportation=rs.getString("transportation");
+		trip.add(t);
+	}
+		
+		
 		return trip;
 	}
 
